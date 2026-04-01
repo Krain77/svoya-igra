@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИТ-Квиз | НИТ</title>
+    <style>
+        :root {
+            --dark-blue: #0f172a;
+            --light-blue: #1e293b;
+            --bright-green: #22c55e;
+            --gray: #475569;
+            --visited: #1e293b;
+            --text-light: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-blue);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo{
+            display: flex;
+        }
+        header h1 {
+            font-size: 3.5rem;
+            color: #1383C0;
+            text-shadow: 1px 0 10px #1383C0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: var(--gray);
+            margin: -20px;
+        }
+
+        /* Сетка игры */
+        .game-board {
+            display: grid;
+            grid-template-columns: 250px repeat(4, 1fr);
+            gap: 15px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .category {
+            background-color: var(--light-blue);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            border-left: 5px solid var(--bright-green);
+            font-size: 1.4rem;
+            min-height: 100px;
+        }
+
+        .question-cell {
+            background-color: var(--light-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--bright-green);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .question-cell:hover {
+            transform: scale(1.05);
+            border-color: var(--bright-green);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Стиль для посещенных ячеек */
+        .question-cell.visited {
+            background-color: var(--dark-blue);
+            color: var(--gray);
+            border-color: var(--gray);
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.5;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--light-blue);
+            width: 100%;
+            max-width: 700px;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid var(--bright-green);
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-question {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .modal-answer {
+            font-size: 2rem;
+            color: var(--bright-green);
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 1px dashed var(--gray);
+            display: none;
+        }
+
+        .btn {
+            background: var(--bright-green);
+            color: var(--dark-blue);
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-close {
+            background: var(--gray);
+            color: white;
+        }
+        
+
+        @media (max-width: 900px) {
+            .game-board {
+                grid-template-columns: 1fr;
+            }
+            .category {
+                min-height: auto;
+                background: var(--bright-green);
+                color: var(--dark-blue);
+            }
+            .question-row {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+           <h1>СВОЯ ИГРА - КВИЗ НИТ</h1> 
+           <img src="https://i.ibb.co/qFYKzcCm/logo-no-bg-preview-carve-photos-1.png" width="100px" alt="">
+        </div>
+        
+        <p>Выберите категорию и сложность вопроса</p>
+    </header>
+
+    <div class="game-board" id="board">
+        <!-- Генерируется через JS -->
+    </div>
+
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div id="modal-cat" style="color: var(--gray); margin-bottom: 10px; font-weight: bold;"></div>
+            <div class="modal-question" id="question-text">Текст вопроса?</div>
+            <div class="modal-answer" id="answer-text">Ответ</div>
+            
+            <div class="controls">
+                <button class="btn" id="show-answer">Показать ответ</button>
+                <button class="btn btn-close" id="close-modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gameData = [
+            {
+                category: "ООП",
+                questions: [
+                    { points: 200, q: "Как называется «чертеж» или шаблон, по которому создается объект?", a: "Класс" },
+                    { points: 400, q: "Назовите три основных столпа ООП.", a: "Инкапсуляция, Наследование, Полиморфизм" },
+                    { points: 600, q: "Какой принцип позволяет дочернему классу использовать методы родительского?", a: "Наследование" },
+                    { points: 800, q: "Как называют методы в Python, начинающиеся с двойного подчеркивания (напр. __init__)?", a: "Магические методы (Dunder-методы)" }
+                ]
+            },
+            {
+                category: "Инфо. технологии",
+                questions: [
+                    { points: 200, q: "Как расшифровывается аббревиатура IT?", a: "Information Technology" },
+                    { points: 400, q: "Протокол передачи гипертекста, основа интернета.", a: "HTTP / HTTPS" },
+                    { points: 600, q: "Система управления версиями, популярная у разработчиков.", a: "Git" },
+                    { points: 800, q: "Разделение разработки на визуальную часть и серверную.", a: "Frontend и Backend" }
+                ]
+            },
+            {
+                category: "3D-моделирование",
+                questions: [
+                    { points: 200, q: "Клавиши в Blender для Перемещения, Поворота и Масштаба?", a: "G (Grab), R (Rotate), S (Scale)" },
+                    { points: 400, q: "Режим в Blender для изменения вершин и граней.", a: "Edit Mode (Режим редактирования)" },
+                    { points: 600, q: "Модификатор для сглаживания модели (увеличения полигонов).", a: "Subdivision Surface" },
+                    { points: 800, q: "Два основных движка рендеринга в Blender.", a: "Eevee и Cycles" }
+                ]
+            },
+            {
+                category: "Базы данных",
+                questions: [
+                    { points: 200, q: "Расшифруйте SQL.", a: "Structured Query Language" },
+                    { points: 400, q: "Уникальный идентификатор записи в таблице.", a: "Primary Key (Первичный ключ)" },
+                    { points: 600, q: "Команда SQL для получения данных.", a: "SELECT" },
+                    { points: 800, q: "Современное расширение в PHP для безопасной работы с БД.", a: "PDO или MySQLi" }
+                ]
+            },
+            {
+                category: "Web-программирование",
+                questions: [
+                    { points: 200, q: "Что отвечает за структуру, а что за стили страницы?", a: "HTML — структура, CSS — стили" },
+                    { points: 400, q: "Где выполняется JavaScript, а где PHP?", a: "JS — в браузере (клиент), PHP — на сервере" },
+                    { points: 600, q: "Свойство CSS для создания гибких сеток (макетов).", a: "Flexbox или Grid" },
+                    { points: 800, q: "Как выглядит стандартный тег вывода переменной в PHP?", a: "&lt;?php echo $var; ?&gt; или &lt;?= $var ?&gt;" }
+                ]
+            }
+        ];
+
+        const board = document.getElementById('board');
+        const modal = document.getElementById('modal');
+        const questionText = document.getElementById('question-text');
+        const answerText = document.getElementById('answer-text');
+        const showAnswerBtn = document.getElementById('show-answer');
+        const closeModalBtn = document.getElementById('close-modal');
+        const modalCat = document.getElementById('modal-cat');
+
+        // Инициализация игры
+        function initGame() {
+            gameData.forEach((catData, catIndex) => {
+                // Добавляем название категории
+                const catDiv = document.createElement('div');
+                catDiv.className = 'category';
+                catDiv.innerText = catData.category;
+                board.appendChild(catDiv);
+
+                // Добавляем ячейки с вопросами
+                catData.questions.forEach((q, qIndex) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'question-cell';
+                    cell.innerText = q.points;
+                    cell.onclick = () => openQuestion(catIndex, qIndex, cell);
+                    board.appendChild(cell);
+                });
+            });
+        }
+
+        function openQuestion(catIdx, qIdx, cellElement) {
+            if (cellElement.classList.contains('visited')) return;
+
+            const data = gameData[catIdx].questions[qIdx];
+            
+            modalCat.innerText = gameData[catIdx].category + " — " + data.points;
+            questionText.innerHTML = data.q;
+            answerText.innerHTML = data.a;
+            
+            answerText.style.display = 'none';
+            showAnswerBtn.style.display = 'inline-block';
+            modal.style.display = 'flex';
+
+            // Помечаем как посещенную
+            cellElement.classList.add('visited');
+        }
+
+        showAnswerBtn.onclick = () => {
+            answerText.style.display = 'block';
+            showAnswerBtn.style.display = 'none';
+        };
+
+        closeModalBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+
+        // Закрытие при клике вне контента
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+
+        initGame();
+    </script>
+</body>
+</html>
